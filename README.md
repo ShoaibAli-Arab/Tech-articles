@@ -107,10 +107,15 @@ Pick the tool that fits your compliance, your budget, and your team's capacity t
 
 ## 5 Key Takeaways
 1)Match the tool to your constraint — compliance, budget, or team size — not to a features checklist.
+
 2)Datadog's speed comes with a billing model that rewards discipline; monitor your monitors before they monitor you.
+
 3)Prometheus gives control but demands ownership of storage, HA, and scraping; it is not zero-cost just because it is open source.
+
 4)Alert noise is a people problem, not a tool problem — enforce runbooks and ownership fields before any critical page.
+
 5)Treat observability migration as a product delivery — inventory, automation, validation gates, and a hard cutover date.
+
 
 #DevOps #SiteReliabilityEngineering #Observability #CloudInfrastructure #PrometheusvsDatadog
 
