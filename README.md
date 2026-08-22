@@ -63,8 +63,8 @@ Engineers who've only worked in fully cloud-native, internet-connected environme
 Air-gapped OpenShift in a banking environment isn't just "Kubernetes but slower." It's a fundamentally different operating model: mirror registries instead of public pulls, manual gates instead of full automation, Red Hat docs and internal NAS instead of Stack Overflow, and multi-day approval chains instead of self-service changes. None of it is accidental complexity, it's complexity by design, in service of a security posture that regulated industries require. Understanding that tradeoff is the real lesson.
 
 # 5 Key Takeaways
-Air-gapped environments trade automation convenience for a dramatically reduced attack surface — by design, not accident.
-Zone isolation (DC/MZ/DMZ/DR-DMZ) means repeating tasks manually across each environment — no single control plane shortcut.
-Image delivery requires a manual gate between open dev pipelines and air-gapped mirror registries.
-Internal documentation becomes institutional memory when there's no Google to fall back on.
-Security-first approval chains (port whitelisting, CVE patching) fundamentally change operational cadence versus cloud-native environments.
+1) Air-gapped environments trade automation convenience for a dramatically reduced attack surface — by design, not accident.
+2) Zone isolation (DC/MZ/DMZ/DR-DMZ) means repeating tasks manually across each environment — no single control plane shortcut.
+3) Image delivery requires a manual gate between open dev pipelines and air-gapped mirror registries.
+4) Internal documentation becomes institutional memory when there's no Google to fall back on.
+5) Security-first approval chains (port whitelisting, CVE patching) fundamentally change operational cadence versus cloud-native environments.
