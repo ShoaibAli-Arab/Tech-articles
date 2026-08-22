@@ -12,13 +12,13 @@ Most recently, at a telecom client, the constraint was time and consolidation. T
 
 # Scope and Environment
 
-# Environment 1: Cloud-Native AWS (Prometheus/Grafana)
+## Environment 1: Cloud-Native AWS (Prometheus/Grafana)
 AWS EKS, EC2, S3, VPC
 ~15% reduction in unplanned downtime after implementing Prometheus scraping and Grafana alerting
 Jenkins for CI/CD
 Full control over scrape configs, recording rules, and Alertmanager routing
 
-# Environment 2: Regulated On-Premises Bank (Prometheus/Grafana via Heal APM)
+## Environment 2: Regulated On-Premises Bank (Prometheus/Grafana via Heal APM)
 800+ KVMs, VMs, LPARs, and SANs across DC, MZ, DMZ, and DR-DMZ zones
 OpenShift 4.14 clusters across four environments
 Air-gapped. No external endpoints. All container images and RPMs imported manually
@@ -54,33 +54,35 @@ Tag strategy mattered. We enforced env, service, team, and cluster tags early. W
 
 # Challenges and Troubleshooting
 
-Alert Noise in Datadog
+## Alert Noise in Datadog
 Out of the box, Datadog is eager to alert. After migration, we had pages firing on CPU spikes that lasted 90 seconds. I spent the first week tuning thresholds, adding evaluation windows, and suppressing non-actionable monitors. The learning: Datadog's default monitors are built for visibility, not for sleep. You need to treat alert tuning as a dedicated work stream, not an afterthought.
-Air-Gapped Prometheus Limitations
+## Air-Gapped Prometheus Limitations
 At the bank, a scrape target started failing intermittently. Root cause: the SAN storage backing Prometheus was experiencing latency spikes, and the local TSDB was hitting write timeouts. Diagnosis required correlating Prometheus target_scrape_pool_sync_total with storage team metrics — a multi-team effort. Fix: moved Prometheus WAL to faster local SSD and increased scrape timeouts for slow targets. Lesson: in air-gapped environments, you own the entire stack down to the spindle. There is no vendor support ticket to absorb the blame.
-EKS Control-Plane Visibility
+## EKS Control-Plane Visibility
 With Prometheus on EKS, you do not get managed control plane metrics out of the box. API server latency or etcd size requires CloudWatch or a proxy setup. Datadog's EKS integration, by contrast, ingests control plane metrics through the AWS integration. This is a genuine gap in self-hosted Prometheus on managed Kubernetes. We worked around it with CloudWatch exporter, but it was additional toil.
-Cost Surprises
+## Cost Surprises
 Datadog's per-host billing is predictable until it is not. Log ingestion and custom metrics are where bills inflate. During the parallel run, we watched the invoice closely. The moment we confirmed metric parity, we cut over. Delaying would have burned budget with zero operational benefit.
-Validation and Cutover
+
+# Validation and Cutover
+
 For the Datadog migration, validation had four gates:
-Telemetry Parity. We compared key metrics (CPU, memory, disk, network) between old and new tenants for the same host over a 48-hour window. Discrepancies above 2% were investigated.
-Dashboard Accuracy. Application teams verified their dashboards loaded correctly and time series were continuous post-cutover.
-Monitor Integrity. We triggered synthetic failures in QA to confirm monitors still paged through the correct PagerDuty integrations.
-Billing Verification. We confirmed the legacy tenant host count dropped to zero and the new tenant reflected the full fleet.
+1)Telemetry Parity. We compared key metrics (CPU, memory, disk, network) between old and new tenants for the same host over a 48-hour window. Discrepancies above 2% were investigated.
+2)Dashboard Accuracy. Application teams verified their dashboards loaded correctly and time series were continuous post-cutover.
+3)Monitor Integrity. We triggered synthetic failures in QA to confirm monitors still paged through the correct PagerDuty integrations.
+4)Billing Verification. We confirmed the legacy tenant host count dropped to zero and the new tenant reflected the full fleet.
 The cutover itself was scripted. Update the Datadog Agent site parameter, restart, validate in the new tenant, and deregister from the old. We did QA first, then production in batches by cluster. Zero downtime.
 
 # Key Lessons
 
-Cost Ownership Is Part of the SRE Role
+## Cost Ownership Is Part of the SRE Role
 With Prometheus, cost is infrastructure: EC2, EBS, and your time. With Datadog, cost is a line item that scales with your fleet. I learned to treat Datadog pricing as a first-class constraint. The dual-billing period during migration was a necessary risk, but we measured it in days and dollars, not assumptions.
-Alert Hygiene Is Non-Negotiable
+## Alert Hygiene Is Non-Negotiable
 Both tools will lie to you if you let them. Prometheus Alertmanager can spam just as easily as Datadog if your routing tree is flat. The difference is that Datadog's ease of creating monitors makes it easier to create noise. I now require a runbook link and an explicit "who pages" field before any monitor is marked as critical.
-Compliance Is a Forcing Function
+## Compliance Is a Forcing Function
 The bank did not choose Heal APM because it was technically superior. It chose it because RBI compliance required an approved, air-gapped solution. If you work in regulated industries, your observability choice may be made by audit, not by benchmark. Plan for that.
-The "Build vs Buy" Reality
+## The "Build vs Buy" Reality
 Prometheus gives you control. You own the scrape logic, the retention, the HA setup. That control costs engineering hours. Datadog gives you speed. You get APM, RUM, and cloud integrations in hours, not weeks. That speed costs recurring license fees. Neither is free. The right choice depends on which budget you have — engineering time or operational budget.
-Terraform for Monitors Is a Game Changer
+## Terraform for Monitors Is a Game Changer
 Defining Datadog monitors in Terraform forced rigor. Every threshold change was a merge request. In my Prometheus environments, Grafana dashboards were too often edited in the UI and lost during migrations. I now apply Terraform-style discipline to both tools.
 
 # Recommendations
